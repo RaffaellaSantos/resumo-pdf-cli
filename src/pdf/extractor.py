@@ -1,11 +1,11 @@
 import os
-from utils.text import count_words, get_urls
-from utils.files import output, open_pdf
+from src.utils.text import count_words, get_urls
+from src.utils.files import output, open_pdf
 
-def extract_pdf(pdf: str):
+def extract_pdf(pdf_path: str):
     """Extrai o PDF."""
-    pdf_extraido = open_pdf(pdf)
-    metadata = extract_metadata(pdf_extraido, pdf)
+    pdf_extraido = open_pdf(pdf_path)
+    metadata = extract_metadata(pdf_extraido, pdf_path)
 
     output(metadata)
 
@@ -15,10 +15,10 @@ def extract_metadata(pdf_extraido, pdf):
     size_kb = os.path.getsize(pdf) / 1024
     all_titles = []
     all_links = []
-    full_text = []
+    full_text = ""
 
     for page in pdf_extraido:
-        full_text = page.get_text() + "\n"
+        full_text += page.get_text() + "\n"
         title = detect_struct(page)
         if title:
             all_titles.append(title)

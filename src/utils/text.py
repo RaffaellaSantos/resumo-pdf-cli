@@ -12,6 +12,7 @@ STOPWORDS = {
 
 def count_words(text: str):
     """Retira Stopwords e retorna o número de palavras geral, únicas e mais citadas no texto."""
+    text = unicodedata.normalize("NFKC", text)
     text = re.findall(r"[a-zA-ZÀ-ÿ]+", text.lower())
     filter_words = [w for w in text if w not in STOPWORDS]
 

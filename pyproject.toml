@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "resumo-pdf-cli"
+version = "0.0.1"
+description = """
+    Ferramenta de linha de comando (CLI), capaz de receber o caminho de um arquivo PDF em português como entrada, extrair informações estruturais do documento 
+    gerar um resumo do seu conteúdo usando um modelo de linguagem local da Hugging Face."""
+dependencies = [
+    "pymupdf",
+    "rich",
+    "rich-argparse",
+    "pydantic-settings",
+    "langchain",
+]
+
+[project.scripts]
+cli_pdf = "src.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]

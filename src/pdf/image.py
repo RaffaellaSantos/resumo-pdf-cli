@@ -1,4 +1,4 @@
-from utils.files import open_pdf, pixmap
+from src.utils.files import open_pdf, pixmap
 
 def extract_image(pdf: str, name_image: str):
     """Extrair e guarda imagens do pdf."""
@@ -12,7 +12,6 @@ def extract_image(pdf: str, name_image: str):
             print(f"Imagem encontrada {len(image_list)} nas páginas {page_index}")
         else:
             print(f"Sem imagem na página: {page_index}")
-
 
         for image_index, img in enumerate(image_list, start=1):
             xref = img[0] 

@@ -1,0 +1,17 @@
+README.md
+pyproject.toml
+resumo_pdf_cli.egg-info/PKG-INFO
+resumo_pdf_cli.egg-info/SOURCES.txt
+resumo_pdf_cli.egg-info/dependency_links.txt
+resumo_pdf_cli.egg-info/entry_points.txt
+resumo_pdf_cli.egg-info/requires.txt
+resumo_pdf_cli.egg-info/top_level.txt
+src/__init__.py
+src/main.py
+src/cli/__init__.py
+src/cli/argumments.py
+src/pdf/extractor.py
+src/pdf/image.py
+src/utils/files.py
+src/utils/settings.py
+src/utils/text.py

@@ -1,9 +1,8 @@
 from typing import Dict
-import fitz
-import os
+import fitz, os
 
-def open_pdf(pdf: str):
-    return fitz.open(pdf)
+def open_pdf(pdf_path: str):
+    return fitz.open(pdf_path)
 
 def format_output(metadata: Dict):
     """Constroi a saída dos dados extraidos do pdf."""
@@ -31,14 +30,18 @@ def output(metadata: Dict):
 
 def pixmap(pdf, xref, name_image, image_index, page_index):
     """Cria o Pixmap, converte para RGB, salva a imagem no diretorio."""
-    output_dir = "output/images"
+    output_dir = f"images/{name_image}"
     os.makedirs(output_dir, exist_ok=True)
     
-    pix = fitz.Pixmap(pdf, xref) 
+    try:
+        pix = fitz.Pixmap(pdf, xref) 
 
-    if pix.n - pix.alpha > 3: 
-        pix = fitz.Pixmap(fitz.csRGB, pix)
+        if pix.n - pix.alpha > 3: 
+            pix = fitz.Pixmap(fitz.csRGB, pix)
 
-    file_path = os.path.join(output_dir, f"{name_image}{page_index}.png")
-    pix.save(file_path)
-    pix = None
+        file_path = os.path.join(output_dir, f"{name_image}_pg{page_index}_img{image_index}.png")
+        pix.save(file_path)
+        print(f"[Salvo] {file_path}")
+        pix = None
+    except Exception as e:
+        print(f"[Erro] Falha ao salvar imagem xref {xref}: {e}")
