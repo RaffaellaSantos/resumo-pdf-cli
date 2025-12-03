@@ -1,6 +1,0 @@
-cli
-example
-llm
-main
-pdf
-utils

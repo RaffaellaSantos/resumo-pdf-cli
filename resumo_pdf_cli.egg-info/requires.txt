@@ -1,5 +1,0 @@
-pymupdf
-rich
-rich-argparse
-pydantic-settings
-langchain

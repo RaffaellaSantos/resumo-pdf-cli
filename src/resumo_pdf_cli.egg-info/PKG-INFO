@@ -1,9 +1,0 @@
-Metadata-Version: 2.4
-Name: resumo-pdf-cli
-Version: 0.0.1
-Summary: Ferramenta de linha de comando (CLI), capaz de receber o caminho de um arquivo PDF em português como entrada, extrair informações estruturais do documento 
-Requires-Dist: pymupdf
-Requires-Dist: rich
-Requires-Dist: rich-argparse
-Requires-Dist: pydantic-settings
-Requires-Dist: langchain
