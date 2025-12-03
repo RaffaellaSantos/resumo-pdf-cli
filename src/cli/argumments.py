@@ -4,7 +4,8 @@ from src.pdf.extractor import extract_pdf
 from src.pdf.image import extract_image
 
 def build_parser() -> None:
-    parser = argparse.ArgumentParser(prog="Extrator_PDF", description=textwrap.dedent("""
+    """Construi os argumentos a serem passados."""
+    parser = argparse.ArgumentParser(prog="cli_pdf", description=textwrap.dedent("""
         Ferramenta de linha de comando (CLI), capaz de receber o caminho de
         um arquivo PDF em português como entrada, extrair informações estruturais do documento e
         gerar um resumo do seu conteúdo usando um modelo de linguagem local da Hugging Face.
@@ -14,17 +15,17 @@ def build_parser() -> None:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # Teste para verificar se está funcionando
-    health_parser = subparsers.add_parser(
-        "health",
-        help='Teste de comando',
+    info_parser = subparsers.add_parser(
+        "info",
+        help='Informações básicas sobre a aplicação.',
         formatter_class=rich_argparse.RawDescriptionRichHelpFormatter
     )
-    health_parser.set_defaults(command='health')
+    info_parser.set_defaults(command='info')
 
-    health_parser.add_argument(
-        'echo',
-        type=str
-    )
+    # info_parser.add_argument(
+    #     'echo',
+    #     type=str
+    # )
 
     # Comando para extrair PDF (Texto / imagem / resumo)
     extractor_parser = subparsers.add_parser(
@@ -37,17 +38,19 @@ def build_parser() -> None:
         help='Extrair PDF.',
         epilog=textwrap.dedent("""
             Exemplos:
-                cli_pdf extract_pdf -p "caminho do documento" # Extrai todas as informações
-                cli_pdf extract_pdf -t -p "caminho do documento" # Apenas o texto
-                cli_pdf extract_pdf -i -p "caminho do documento" # Apenas a imagem
-                cli_pdf extract_pdf -s  -p "caminho do documento" # Apenas o resumo do LLM
+                cli_pdf extract_pdf -t -p [path_pdf] "Extrai as informações do texto."
+                cli_pdf extract_pdf -i -n [image_name] -p [path_pdf] "Extrai as figuras do documento."
+                cli_pdf extract_pdf -s -p [path_pdf] "Retorna o resumo do texto."
+                cli_pdf extract_pdf -e -n [image_name] -p [path_pdf] "Extrai informações, imagens e o resumo."
+                
+                Obs: É possível utilizar 'pdf' ao invés de extract_pdf.
         """),
         formatter_class=rich_argparse.RawDescriptionRichHelpFormatter
     )
 
     extractor_parser.set_defaults(command="extract_pdf", func=handle_extract)
 
-    # Caminho do arquivo  (Se apenas este comando for usado ele entrega tudo.)
+    # Caminho do arquivo
     extractor_parser.add_argument(
         '-p', 
         '--path', 
@@ -69,8 +72,16 @@ def build_parser() -> None:
     extractor_parser.add_argument(
         '-i',
         '--image',
+        action='store_true',
+        help='Extrai apenas as imagens. Necessita colocar o nome principal que as imagens terão, para isso utiliza a flag -n.'
+    )
+
+    # Nome da imagem
+    extractor_parser.add_argument(
+        '-n',
+        '--image_name',
         type=validate_str,
-        help="Extrai apenas as imagens, necessita colocar o nome principal que as imagens terão.",
+        help="Nome com que as imagens serão salvas",
         metavar='name_image'
     )
 
@@ -82,23 +93,44 @@ def build_parser() -> None:
         help="Resumo do PDF."
     )
 
+    # Extrair tudo
+    extractor_parser.add_argument(
+        "-e",
+        '--everything',
+        action='store_true',
+        help='Extraia informações, imagens e o resumo do PDF.'
+    )
+
     return parser
 
 def handle_extract(args):
+    """Comunicação entre argumentos e funções."""
     path_pdf = args.path
 
     if args.text_only:
         print(f"Extraindo apenas as inforações do texto de: {path_pdf}\n")
         extract_pdf(path_pdf)
     elif args.image:
-        print(f"Extraindo apenas as imagens de: {path_pdf}\n")
-        extract_image(path_pdf, args.image)
+        if args.image_name:
+            print(f"Extraindo apenas as imagens de: {path_pdf}\n")
+            extract_image(path_pdf, args.image_name)
+        else:
+            raise ValueError("[Erro]: Nome das imagens não foi especificado. Utilize -n para especificar como as imagens devem ser nomeadas.")
     elif args.summarize:
         print(f"Construindo Resumo de: {path_pdf}\n")
-    else:
+        # TODO Adicionar resumo por LLM
+    elif args.everything:
         print("Extraindo informações do texto (Dados, imagens, resumo).")
+        if args.image_name:
+            extract_pdf(path_pdf)
+            extract_image(path_pdf, args.image_name)
+        else:
+            raise ValueError("[Erro]: Nome das imagens não foi especificado. Utilize -n para especificar como as imagens devem ser nomeadas.")
+    else:
+        raise ValueError("[Error]: Necessita de outras flags para indicar ação.")
 
 def run() -> None:
+    """Declara as funções necessárioas para construir a aplicação."""
     parser = build_parser()
 
     args = parser.parse_args()
@@ -107,6 +139,4 @@ def run() -> None:
         args.func(args)
     else:
         parser.print_help()
-
-    print(args)
 

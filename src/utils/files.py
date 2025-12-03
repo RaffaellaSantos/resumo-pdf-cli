@@ -1,10 +1,11 @@
 from typing import Dict
 import fitz, os
 
-def open_pdf(pdf_path: str):
+def open_pdf(pdf_path: str) -> fitz.Document:
+    """Abre o PDF utilizando o pymupdf."""
     return fitz.open(pdf_path)
 
-def format_output(metadata: Dict):
+def format_output(metadata: Dict) -> Dict:
     """Constroi a saída dos dados extraidos do pdf."""
     return {
         "titles": metadata['titles'],
@@ -16,6 +17,7 @@ def format_output(metadata: Dict):
         "links": metadata['links']
     }
 
+# TODO deixar a saída mais bonita
 def output(metadata: Dict):
     """Mostra os dados extraidos."""
     out = format_output(metadata)
@@ -28,7 +30,7 @@ def output(metadata: Dict):
     print(f"Tamanho do arquivo (KB): {out['size_kb']:.2f}\n")
     print(f"Links: {out['links']}\n")
 
-def pixmap(pdf, xref, name_image, image_index, page_index):
+def pixmap(pdf: str, xref: str, name_image: str, image_index: int, page_index: int):
     """Cria o Pixmap, converte para RGB, salva a imagem no diretorio."""
     output_dir = f"images/{name_image}"
     os.makedirs(output_dir, exist_ok=True)
@@ -41,7 +43,7 @@ def pixmap(pdf, xref, name_image, image_index, page_index):
 
         file_path = os.path.join(output_dir, f"{name_image}_pg{page_index}_img{image_index}.png")
         pix.save(file_path)
-        print(f"[Salvo] {file_path}")
+        # print(f"[Salvo] {file_path}")
         pix = None
     except Exception as e:
         print(f"[Erro] Falha ao salvar imagem xref {xref}: {e}")

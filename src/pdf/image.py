@@ -8,10 +8,10 @@ def extract_image(pdf: str, name_image: str):
         page = pdf_extraido[page_index]
         image_list = page.get_images()
 
-        if image_list:
-            print(f"Imagem encontrada {len(image_list)} nas páginas {page_index}")
-        else:
-            print(f"Sem imagem na página: {page_index}")
+        # if image_list:
+        #     print(f"Imagem encontrada {len(image_list)} nas páginas {page_index}")
+        # else:
+        #     print(f"Sem imagem na página: {page_index}")
 
         for image_index, img in enumerate(image_list, start=1):
             xref = img[0] 
