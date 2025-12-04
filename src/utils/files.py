@@ -5,30 +5,31 @@ def open_pdf(pdf_path: str) -> fitz.Document:
     """Abre o PDF utilizando o pymupdf."""
     return fitz.open(pdf_path)
 
-def format_output(metadata: Dict) -> Dict:
-    """Constroi a saída dos dados extraidos do pdf."""
-    return {
-        "titles": metadata['titles'],
-        "page_count": metadata['page_count'],
-        "num_words": metadata['num_words'],
-        "num_voc": metadata['num_voc'],
-        "top_10": metadata['top_10'],
-        "size_kb": metadata['size_kb'],
-        "links": metadata['links']
-    }
+def get_text(doc: fitz.Document) -> str :
+    """Extrai o texto que será resumido."""
+    full_text = ""
+    try:
+        for page in doc:
+            full_text += page.get_text() + "\n"
+        return full_text
+    except Exception as e:
+        raise ValueError(f"[EROO]: Ocorreu um erro extraindo o texto do documento - {e}")   
 
-# TODO deixar a saída mais bonita
-def output(metadata: Dict):
-    """Mostra os dados extraidos."""
-    out = format_output(metadata)
-    print("=====Dados extraidos=====")
-    print(f"Título das seções: {out['titles']}\n")
-    print(f"Número de páginas: {out['page_count']}\n")
-    print(f"Número de palavras: {out['num_words']}\n")
-    print(f"Número de palavras únicas: {out['num_voc']}\n")
-    print(f"10 palavras mais citadas: {out['top_10']}\n")
-    print(f"Tamanho do arquivo (KB): {out['size_kb']:.2f}\n")
-    print(f"Links: {out['links']}\n")
+def format_output(metadata: Dict) -> str:
+    """Constroi a saída dos dados extraidos do pdf."""
+    titles = "\n".join(f"- {t}" for t in metadata['titles'])
+    out = (
+    "## **Dados extraidos**\n\n"
+    f"**Título das seções**: \n{titles}\n\n"
+    f"**Número de páginas**: {metadata['page_count']}\n\n"
+    f"**Número de palavras**: {metadata['num_words']}\n\n"
+    f"**Número de palavras únicas**: {metadata['num_voc']}\n\n"
+    f"**10 palavras mais citadas**: {metadata['top_10']}\n\n"
+    f"**Tamanho do arquivo (KB)**: {metadata['size_kb']:.2f}\n\n"
+    f"**Links**: {metadata['links']}\n\n"
+    )
+
+    return out 
 
 def pixmap(pdf: str, xref: str, name_image: str, image_index: int, page_index: int):
     """Cria o Pixmap, converte para RGB, salva a imagem no diretorio."""
@@ -47,3 +48,16 @@ def pixmap(pdf: str, xref: str, name_image: str, image_index: int, page_index: i
         pix = None
     except Exception as e:
         print(f"[Erro] Falha ao salvar imagem xref {xref}: {e}")
+
+# TODO Colocar o titulo do documento
+def make_markdown(summarize: str | None = None, metadata: str | None = None):
+    filename = "markdown/test.md"
+    os.makedirs("markdown", exist_ok=True)
+    markdown = open(filename, "w")
+
+    if summarize != None:
+        markdown.write(summarize + "\n\n")
+    if metadata != None:
+        markdown.write(metadata + "\n\n")
+    
+    markdown.close()

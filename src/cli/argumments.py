@@ -1,7 +1,9 @@
 import argparse, textwrap, rich_argparse
 from src.utils.validator import validate_str, validate_path
+from src.utils.files import make_markdown
 from src.pdf.extractor import extract_pdf
 from src.pdf.image import extract_image
+from src.llm.summarize import summarize
 
 def build_parser() -> None:
     """Construi os argumentos a serem passados."""
@@ -64,7 +66,7 @@ def build_parser() -> None:
     extractor_parser.add_argument(
         '-t', 
         '--text_only',
-        help="Extrai apenas as informações do texto",
+        help="Extrai apenas as informações do texto e gera markdown com conteúdo.",
         action='store_true'
     )
 
@@ -90,7 +92,7 @@ def build_parser() -> None:
         '-s',
         '--summarize',
         action='store_true',
-        help="Resumo do PDF."
+        help="Resume o PDF e gera markdown com conteúdo."
     )
 
     # Extrair tudo
@@ -98,7 +100,7 @@ def build_parser() -> None:
         "-e",
         '--everything',
         action='store_true',
-        help='Extraia informações, imagens e o resumo do PDF.'
+        help='Extraia informações, imagens e o resumo do PDF. Salva as informações e o resumo em um arquivo markdown.'
     )
 
     return parser
@@ -109,7 +111,8 @@ def handle_extract(args):
 
     if args.text_only:
         print(f"Extraindo apenas as inforações do texto de: {path_pdf}\n")
-        extract_pdf(path_pdf)
+        metadata = extract_pdf(path_pdf)
+        make_markdown(metadata=metadata)
     elif args.image:
         if args.image_name:
             print(f"Extraindo apenas as imagens de: {path_pdf}\n")
@@ -118,12 +121,15 @@ def handle_extract(args):
             raise ValueError("[Erro]: Nome das imagens não foi especificado. Utilize -n para especificar como as imagens devem ser nomeadas.")
     elif args.summarize:
         print(f"Construindo Resumo de: {path_pdf}\n")
-        # TODO Adicionar resumo por LLM
+        summa = summarize(path_pdf)
+        make_markdown(summarize=summa)
     elif args.everything:
         print("Extraindo informações do texto (Dados, imagens, resumo).")
         if args.image_name:
-            extract_pdf(path_pdf)
+            metadata = extract_pdf(path_pdf)
             extract_image(path_pdf, args.image_name)
+            summa = summarize(path_pdf)
+            make_markdown(summa, metadata)
         else:
             raise ValueError("[Erro]: Nome das imagens não foi especificado. Utilize -n para especificar como as imagens devem ser nomeadas.")
     else:

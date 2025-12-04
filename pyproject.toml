@@ -13,6 +13,7 @@ dependencies = [
     "rich",
     "rich-argparse",
     "langchain",
+    "langchain-ollama"
 ]
 
 [project.scripts]
