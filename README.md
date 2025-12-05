@@ -1,22 +1,107 @@
-# resumo-pdf-cli
-Aplicação de CLI capaz de ler e extrair informações de um documento PDF, assim como, entrega um resumo acerca do conteúdo contido.
+# Resumo PDF CLI
 
-# Ferramenta utilizadas
+Ferramenta de linha de comando (CLI) para extrair texto e imagens de arquivos PDF em Português e gerar um resumo formatado em Markdown usando um modelo de linguagem local (via Ollama + LangChain).
 
-- Python (Argparse, LangChain)
-- PyMuPDF
-- Hugging Face
-- Ollama
-- LangChain
+**Principais recursos**
+- Extrair metadados e texto estruturado de PDFs.
+- Extrair imagens incorporadas no PDF.
+- Gerar resumos em Português com saída em Markdown contendo título, resumo e palavras-chave.
+- Salvar resultados automaticamente em pastas `markdown/` e `images/`.
 
-# Modelo utilizado
+**Estrutura do projeto (resumida)**
 
-**(tensorblock/SummLlama3.2-3B-GGUF)[https://huggingface.co/tensorblock/SummLlama3.2-3B-GGUF]**
+```
+resumo-pdf-cli/
+├── src/
+│   ├── cli/          # argumentos e interface CLI
+│   ├── llm/          # integração com LLM (Ollama / LangChain)
+│   ├── pdf/          # extração de texto e imagens do PDF
+│   └── utils/        # helpers (arquivos, validações, formatação)
+├── pyproject.toml
+└── README.md
+```
 
-# Iniciar projeto
+## Ferramenta utilizadas
 
-Na pasta onde está o arquivo *pyproject.toml* execute:
+- **PyMuPDF** (fitz): Manipulação e extração de dados de arquivos PDF.
+
+- **Hugging Face**: Utilizado para sumarização e processamento de linguagem natural.
+
+- **Ollama**: Executa modelos de linguagem localmente de forma simples e rápida.
+
+- **LangChain**: Framework para orquestrar modelos de linguagem e construir pipelines.
+
+- **Rich Argparse**: Melhora e estiliza a interface de linha de comando.
+
+## Requisitos
+- Python 3.10+ (recomendado)
+- Ter o `ollama` instalado e em execução localmente com o modelo necessário.
+- Dependências Python definidas em `pyproject.toml`.
+
+Observação: a biblioteca usa `OllamaLLM` via LangChain para se comunicar com modelos locais (ex.: `tensorblock/SummLlama3.2-3B-GGUF`).
+
+## Instalação
+
+1. Crie e ative um ambiente virtual:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate (Linux)
+.venv/Scripts/Activate (Windows)
+```
+
+2. Instale o pacote em modo editável (a partir da raiz do projeto):
 
 ```bash
 pip install -e .
 ```
+
+3. Garanta que o `ollama` está em execução e que o modelo desejado está disponível localmente.
+
+## Uso
+
+O entrypoint da CLI é `pdf_cli`. Para ver as opções de linha de comando:
+
+```bash
+pdf_cli -h
+```
+
+Argumentos principais:
+- `-p, --path`: caminho para o arquivo PDF (obrigatório)
+- `-t, --text_only`: extrai apenas o texto e gera um Markdown
+- `-i, --image`: extrai apenas as imagens
+- `-n, --image_name`: nome base para salvar imagens (usado com `-i` ou `-e`)
+- `-s, --summarize`: gera apenas o resumo usando a LLM
+- `-e, --everything`: executa todas as etapas (texto, imagens e resumo)
+
+Exemplos:
+
+```bash
+# Extrair texto e criar markdown
+pdf_cli -p ./teste.pdf -t
+
+# Extrair imagens (salva em images/<nome_do_arquivo>/)
+pdf_cli -p ./teste.pdf -i -n nome_exemplo
+
+# Gerar resumo em Markdown
+pdf_cli -p ./teste.pdf -s
+
+# Executar tudo (texto, imagens e resumo)
+pdf_cli -p ./teste.pdf -e -n nome_exemplo
+```
+
+## Saída
+- Resumos e metadados são salvos como arquivos Markdown na pasta `markdown/`.
+- Imagens extraídas são salvas em `images/<nome_do_arquivo>/` com o nome base definido por `-n`\_`númeroDaPágina`\_`númeroDaImagem`.
+
+## Modelo / LLM
+
+O projeto utiliza `OllamaLLM` integrado ao LangChain. O modelo padrão configurado no código é:
+
+```
+hf.co/tensorblock/SummLlama3.2-3B-GGUF:Q5_K_M
+```
+
+## Autor
+
+**Adriana Raffaella S. F.**
