@@ -17,6 +17,7 @@ resumo-pdf-cli/
 │   ├── llm/          # integração com LLM (Ollama / LangChain)
 │   ├── pdf/          # extração de texto e imagens do PDF
 │   └── utils/        # helpers (arquivos, validações, formatação)
+├── pdf_exemplos/     # PDFs utilizados para testar aplicação
 ├── pyproject.toml
 └── README.md
 ```
