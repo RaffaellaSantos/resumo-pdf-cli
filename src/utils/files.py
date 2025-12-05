@@ -53,7 +53,7 @@ def pixmap(pdf: str, xref: str, name_image: str, image_index: int, page_index: i
 def make_markdown(summarize: str | None = None, metadata: str | None = None):
     filename = "markdown/test.md"
     os.makedirs("markdown", exist_ok=True)
-    markdown = open(filename, "w")
+    markdown = open(filename, "w", encoding="utf-8-sig")
 
     if summarize != None:
         markdown.write(summarize + "\n\n")
