@@ -1,8 +1,11 @@
-import argparse
+import argparse, logging
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 def validate_str(value: str="") -> str:
     """Valida se a string existe."""
+    logger.debug(f"Validando string: {value}")
     clean_str = value.strip()
 
     if not clean_str:
@@ -12,6 +15,7 @@ def validate_str(value: str="") -> str:
 
 def validate_path(value: str) -> Path:
     """Valiida se o caminho existe, se é um arquivo e se é um pdf."""
+    logger.debug(f"Validando caminho do arquivo: {value}")
     path = Path(value)
 
     if not path.exists():
@@ -24,3 +28,8 @@ def validate_path(value: str) -> Path:
         raise argparse.ArgumentTypeError(f"[Erro]: O arquivo precisa ser um PDF. Você forneceu '{path.suffix}'. ")
     
     return path
+
+def define_name(pdf_path: Path) -> str:
+    """Define o nome do arquivo sem extensão."""
+    logger.debug(f"Definindo nome do arquivo para: {pdf_path.stem}")
+    return pdf_path.stem

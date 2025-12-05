@@ -1,59 +1,41 @@
-import argparse, textwrap, rich_argparse
-from src.utils.validator import validate_str, validate_path
+import argparse, textwrap, rich_argparse, logging
+from src.utils.validator import validate_str, validate_path, define_name
 from src.utils.files import make_markdown
 from src.pdf.extractor import extract_pdf
 from src.pdf.image import extract_image
 from src.llm.summarize import summarize
 
+logger = logging.getLogger(__name__)
+
 def build_parser() -> None:
     """Construi os argumentos a serem passados."""
-    parser = argparse.ArgumentParser(prog="cli_pdf", description=textwrap.dedent("""
-        Ferramenta de linha de comando (CLI), capaz de receber o caminho de
-        um arquivo PDF em português como entrada, extrair informações estruturais do documento e
-        gerar um resumo do seu conteúdo usando um modelo de linguagem local da Hugging Face.
-    """), 
-    formatter_class=rich_argparse.RawDescriptionRichHelpFormatter)
-
-    subparsers = parser.add_subparsers(dest="command", required=True)
-
-    # Teste para verificar se está funcionando
-    info_parser = subparsers.add_parser(
-        "info",
-        help='Informações básicas sobre a aplicação.',
-        formatter_class=rich_argparse.RawDescriptionRichHelpFormatter
-    )
-    info_parser.set_defaults(command='info')
-
-    # info_parser.add_argument(
-    #     'echo',
-    #     type=str
-    # )
-
-    # Comando para extrair PDF (Texto / imagem / resumo)
-    extractor_parser = subparsers.add_parser(
-        "extract_pdf", 
-        aliases=['pdf'], 
-        description=textwrap.dedent("""
-        Use este comando para extrair informações do PDF (número de páginas, palavras escritas, palavras mais repetidas, etc).
-        Forneça uma flag para extrair apenas o texto e/ou extrair as imagens.
+    parser = argparse.ArgumentParser(prog="pdf_cli", description=textwrap.dedent("""
+        Projeto: Resumo PDF CLI
+        Descrição: Ferramenta de linha de comando (CLI), capaz de receber o caminho de um arquivo PDF em português como entrada, extrair informações 
+        estruturais do documento egerar um resumo do seu conteúdo usando um modelo de linguagem local da Hugging Face.
+        Autor: Adriana Raffaella S. F.
+        Ferramentas utilizadas:
+            - PyMuPDF (fitz): Para manipulação e extração de dados de arquivos PDF.
+            - Hugging Face, Ollama e Langchain: Para sumarização do texto extraído.
+            - Rich argparse: Para melhorar a interface de linha de comando.
     """),
-        help='Extrair PDF.',
         epilog=textwrap.dedent("""
             Exemplos:
-                cli_pdf extract_pdf -t -p [path_pdf] "Extrai as informações do texto."
-                cli_pdf extract_pdf -i -n [image_name] -p [path_pdf] "Extrai as figuras do documento."
-                cli_pdf extract_pdf -s -p [path_pdf] "Retorna o resumo do texto."
-                cli_pdf extract_pdf -e -n [image_name] -p [path_pdf] "Extrai informações, imagens e o resumo."
+                pdf_cli -t -p ./teste.pdf "Extrai as informações do texto."
+                pdf_cli -i -n nome_teste -p ./teste.pdf "Extrai as figuras do documento."
+                pdf_cli -s -p ./teste.pdf "Retorna o resumo do texto."
+                pdf_cli -e -n nome_teste -p ./teste.pdf "Extrai informações, imagens e o resumo."
                 
-                Obs: É possível utilizar 'pdf' ao invés de extract_pdf.
-        """),
-        formatter_class=rich_argparse.RawDescriptionRichHelpFormatter
-    )
-
-    extractor_parser.set_defaults(command="extract_pdf", func=handle_extract)
+                Observações: 
+                    - Para extrair as imagens, é necessário especificar o nome com que as imagens serão salvas utilizando a flag -n.
+                    - As informações extraídas e o resumo são salvos em um arquivo markdown na pasta 'markdown'.
+                    - As imagens extraídas são salvas na pasta 'images/nome_do_arquivo/nome_da_imagem'.
+                    - Todas as pastas são criadas automaticamente e salvas no diretório correspondente ao que está sendo executado.
+        """), 
+    formatter_class=rich_argparse.RawDescriptionRichHelpFormatter)
 
     # Caminho do arquivo
-    extractor_parser.add_argument(
+    parser.add_argument(
         '-p', 
         '--path', 
         type=validate_path, 
@@ -63,7 +45,7 @@ def build_parser() -> None:
     )
 
     # Extrair apenas o texto
-    extractor_parser.add_argument(
+    parser.add_argument(
         '-t', 
         '--text_only',
         help="Extrai apenas as informações do texto e gera markdown com conteúdo.",
@@ -71,15 +53,15 @@ def build_parser() -> None:
     )
 
     # Extrair apenas a imagem
-    extractor_parser.add_argument(
+    parser.add_argument(
         '-i',
         '--image',
         action='store_true',
-        help='Extrai apenas as imagens. Necessita colocar o nome principal que as imagens terão, para isso utiliza a flag -n.'
+        help='Extrai apenas as imagens.'
     )
 
     # Nome da imagem
-    extractor_parser.add_argument(
+    parser.add_argument(
         '-n',
         '--image_name',
         type=validate_str,
@@ -88,7 +70,7 @@ def build_parser() -> None:
     )
 
     # Extrair apenas o resumo
-    extractor_parser.add_argument(
+    parser.add_argument(
         '-s',
         '--summarize',
         action='store_true',
@@ -96,44 +78,66 @@ def build_parser() -> None:
     )
 
     # Extrair tudo
-    extractor_parser.add_argument(
+    parser.add_argument(
         "-e",
         '--everything',
         action='store_true',
         help='Extraia informações, imagens e o resumo do PDF. Salva as informações e o resumo em um arquivo markdown.'
     )
 
+    parser.set_defaults(func=handle_extract)
+
     return parser
 
 def handle_extract(args):
     """Comunicação entre argumentos e funções."""
+
+    logger.debug(f"Argumentos recebidos: {vars(args)}")
+
+    if not args.path:
+        logger.error("Caminho do arquivo não foi especificado.")
     path_pdf = args.path
+    filename = define_name(path_pdf)
 
     if args.text_only:
-        print(f"Extraindo apenas as inforações do texto de: {path_pdf}\n")
+        logger.info(f"Extraindo apenas as inforações do texto de: {filename}\n")
         metadata = extract_pdf(path_pdf)
-        make_markdown(metadata=metadata)
+        make_markdown(metadata=metadata, filename=filename)
+        logger.info("Metadados extraidos e markdown criado com sucesso.")
+
     elif args.image:
         if args.image_name:
-            print(f"Extraindo apenas as imagens de: {path_pdf}\n")
-            extract_image(path_pdf, args.image_name)
+            logger.info(f"Extraindo apenas as imagens de: {filename}\n")
+            extract_image(path_pdf, args.image_name, filename)
+            logger.info("Imagens extraidas com sucesso.")
         else:
-            raise ValueError("[Erro]: Nome das imagens não foi especificado. Utilize -n para especificar como as imagens devem ser nomeadas.")
+            logger.error("Nome das imagens não foi especificado. Utilize -n para especificar como as imagens devem ser nomeadas.")
+        
     elif args.summarize:
-        print(f"Construindo Resumo de: {path_pdf}\n")
+        logger.info(f"Construindo Resumo de: {filename} com LLM.\n")
+        logger.info("Isso pode levar alguns minutos dependendo do tamanho do documento e do modelo utilizado.")
         summa = summarize(path_pdf)
-        make_markdown(summarize=summa)
+        make_markdown(summarize=summa, filename=filename)
+        logger.info("Resumo criado e markdown salvo com sucesso.")
+
     elif args.everything:
-        print("Extraindo informações do texto (Dados, imagens, resumo).")
+        logger.info("Extraindo informações do texto (Dados, imagens, resumo).")
+
         if args.image_name:
+            logger.info(f"Etapa 1: Extraindo todas as informações de: {filename}\n")
             metadata = extract_pdf(path_pdf)
-            extract_image(path_pdf, args.image_name)
+
+            logger.info("Etapa 2: Extraindo todas as imagens.\n")
+            extract_image(path_pdf, args.image_name, filename)
+
+            logger.info("Etapa 3: Construindo Resumo com LLM.\n")
             summa = summarize(path_pdf)
-            make_markdown(summa, metadata)
+            make_markdown(summarize=summa, metadata=metadata, filename=filename)
+            logger.info("Todas as informações extraidas e markdown criado com sucesso.")
         else:
-            raise ValueError("[Erro]: Nome das imagens não foi especificado. Utilize -n para especificar como as imagens devem ser nomeadas.")
+            logger.error("Nome das imagens não foi especificado. Utilize -n para especificar como as imagens devem ser nomeadas.")
     else:
-        raise ValueError("[Error]: Necessita de outras flags para indicar ação.")
+        logger.error("Necessita de outras flags para indicar ação.")
 
 def run() -> None:
     """Declara as funções necessárioas para construir a aplicação."""
@@ -142,7 +146,9 @@ def run() -> None:
     args = parser.parse_args()
 
     if hasattr(args, 'func'):
-        args.func(args)
+        try:
+            args.func(args)
+        except Exception:
+            raise
     else:
         parser.print_help()
-

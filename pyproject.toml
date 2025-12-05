@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [project.scripts]
-cli_pdf = "src.main:main"
+pdf_cli = "src.main:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

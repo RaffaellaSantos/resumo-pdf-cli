@@ -1,6 +1,8 @@
-import os
+import os, logging
 from src.utils.text import count_words, get_urls, is_latex_pdf, sanitize_latex_text, normalize_text
 from src.utils.files import open_pdf, get_text, format_output
+
+logger = logging.getLogger(__name__)
 
 def extract_pdf(pdf_path: str):
     """Extrai o PDF."""
@@ -16,6 +18,7 @@ def extract_pdf(pdf_path: str):
 
 def extract_metadata(doc: str, pdf_path: str):
     """Extrai dados do PDF."""
+    logger.debug("Iniciando extração de metadados do PDF.")
     try:
         page_count = doc.page_count
         size_kb = os.path.getsize(pdf_path) / 1024
@@ -48,10 +51,11 @@ def extract_metadata(doc: str, pdf_path: str):
             "links": all_links
         }
     except Exception as e:
-        raise ValueError(f"[ERRO]: Problema ao extrair dados - {e}")
+        logger.error(f"Problema ao extrair dados - {e}")
 
 def detect_struct(page: str) -> str:
     """Detecta os Títulos das seções."""
+    logger.debug(f"Detectando títulos na página {page.number}.")
     blocks = page.get_text("dict")["blocks"]
 
     titles = []

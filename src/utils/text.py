@@ -1,8 +1,8 @@
-import re
-import fitz
-import unicodedata
+import re, fitz, unicodedata, logging
 from typing import Dict
 from collections import Counter
+
+logger = logging.getLogger(__name__)
 
 # Stopwords básicas em português
 STOPWORDS = {
@@ -15,6 +15,7 @@ STOPWORDS = {
 
 def is_latex_pdf(doc: fitz.Document) -> bool:
     """Detecta arquivos feitos com latex"""
+    logger.debug("Detectando se o PDF foi criado com LaTeX.")
     metadata = doc.metadata
     if not metadata:
         return False
@@ -32,6 +33,7 @@ def is_latex_pdf(doc: fitz.Document) -> bool:
 
 def normalize_text(text: str) -> str:
     """Normaliza o texto."""
+    logger.debug("Normalizando o texto.")
     text = unicodedata.normalize("NFKC", text)
     
     return text
@@ -42,6 +44,7 @@ def sanitize_latex_text(text: str) -> str:
     Corrige artefatos comuns de PDFs gerados por LaTeX (acentos separados,
     hifenização de quebra de linha, ligaduras quebradas).
     """
+    logger.debug("Sanitizando texto LaTeX.")
     text = text.replace(" ̧c", "ç").replace("¸c", "ç").replace(" ¸", "¸")
 
     text = re.sub(r'([cCaAoO])\s+([¸~^´`])', r'\1\2', text)
@@ -79,9 +82,10 @@ def sanitize_latex_text(text: str) -> str:
 
 def count_words(text: str, is_latex: bool):
     """Retira Stopwords e retorna o número de palavras geral, únicas e mais citadas no texto."""
+    logger.debug("Contando palavras no texto.")
     if is_latex:
         text = sanitize_latex_text(text)
-        print("Latex")
+        logger.debug("Texto sanitizado para LaTeX.")
     
     text = normalize_text(text)    
 
@@ -98,6 +102,7 @@ def count_words(text: str, is_latex: bool):
 
 def get_urls(links: Dict) -> Dict:
     """Extrai apenas as urls do texto."""
+    logger.debug("Extraindo URLs do texto.")
     urls  = [link["uri"] for link in links if "uri" in link]
 
     return urls
