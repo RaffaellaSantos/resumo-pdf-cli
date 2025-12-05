@@ -10,8 +10,32 @@ STOPWORDS = {
     "em","no","na","nos","nas","por","para","com","se","ao","aos","à","às",
     "não","mais","como","é","ser","são","seu","sua","seus","suas", "foi", "ser", 
     "estar", "é", "são", "ele", "ela", "nós", "apenas", "este", "será", "pelo",
-    "and", "cão", "ca", "ou", "cada", "pode"
+    "and", "cão", "ca", "ou", "cada", "pode", "quê", "já", "tem", "temos", "muito",
+    "há", "assim", "também", "entre", "quando", "mais", "todos", "todas", "todo",
+    "toda", "foim", "serem", "seria", "serão", "sejam", "nada", "the", "is", "in",
+    "and", "to", "of", "a", "that", "it", "on", "for", "with", "as", "was", "at", "by",
+    "an", "be", "this", "from", "or", "está", "dois", "duas", "muita", "meu", "minha",
+    "meus", "minhas", "teu", "tua", "teus", "tuas", "nosso", "nossa", "nossos", "nossas",
+    "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "uso", "usar", "essa",
+    "esse", "esses", "essas", "num", "numa", "nuns", "numas", "pela", "pelas", "pelos", "pelo",
+    "ela", "elas", "dela", "delas", "dele", "deles", "ele", "eles", "lhe", "lhes", "mim", "https",
+    "doi", "org", "www", "com", "br"
 }
+
+SECTION_KEYWORDS = [
+    r"\bintrodução\b",
+    r"\bresumo\b",
+    r"\bmetodologia\b",
+    r"\bresultados?\b",
+    r"\bdiscussão\b",
+    r"\bconclus(ão|ões)\b",
+    r"\bconsiderações finais\b",
+    r"\brefer(ê|e)ncias\b",
+    r"\bagradecimentos\b",
+]
+
+SECTION_REGEX = re.compile("|".join(SECTION_KEYWORDS), re.IGNORECASE)
+
 
 def is_latex_pdf(doc: fitz.Document) -> bool:
     """Detecta arquivos feitos com latex"""
@@ -91,7 +115,7 @@ def count_words(text: str, is_latex: bool):
 
     text = re.findall(r"[^\W\d_]+", text.lower(), re.UNICODE)
 
-    filter_words = [w for w in text if w not in STOPWORDS]
+    filter_words = [w for w in text if w not in STOPWORDS and len(w) > 1]
 
     num_words = len(filter_words)
     vocabulary = set(filter_words)
@@ -106,3 +130,18 @@ def get_urls(links: Dict) -> Dict:
     urls  = [link["uri"] for link in links if "uri" in link]
 
     return urls
+
+def search_section_keywords(text: str) -> str:
+    """Procura por palavras-chave de seções no texto."""
+    logger.debug("Procurando palavras-chave de seções no texto.")
+    
+    clean_text = text.strip()
+
+    if len(clean_text.split()) > 3:
+        return None
+
+    if SECTION_REGEX.search(clean_text.lower()):
+        clean = re.sub(r"^[\d.\s-]+", "", clean_text)
+        return clean.strip()
+    
+    return None

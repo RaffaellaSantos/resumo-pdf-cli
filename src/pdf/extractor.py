@@ -1,11 +1,14 @@
 import os, logging
-from src.utils.text import count_words, get_urls, is_latex_pdf, sanitize_latex_text, normalize_text
+import re
+from src.utils.text import count_words, get_urls, is_latex_pdf, sanitize_latex_text, normalize_text, search_section_keywords
 from src.utils.files import open_pdf, get_text, format_output
+from statistics import mode
 
 logger = logging.getLogger(__name__)
 
 def extract_pdf(pdf_path: str):
     """Extrai o PDF."""
+    logger.debug(f"Iniciando extração do PDF: {pdf_path}")
     doc = open_pdf(pdf_path)
     try:
         metadata = extract_metadata(doc, pdf_path)
@@ -53,29 +56,72 @@ def extract_metadata(doc: str, pdf_path: str):
     except Exception as e:
         logger.error(f"Problema ao extrair dados - {e}")
 
-def detect_struct(page: str) -> str:
-    """Detecta os Títulos das seções."""
-    logger.debug(f"Detectando títulos na página {page.number}.")
+def detect_struct(page):
+    """Detecta títulos reais usando heurísticas robustas."""
+    logger.debug("Detectando títulos na página do PDF.")
     blocks = page.get_text("dict")["blocks"]
 
+    spans = []
+    for b in blocks:
+        if "lines" in b:
+            for line in b["lines"]:
+                for span in line["spans"]:
+                    spans.append(span)
+
+    if not spans:
+        return None
+    font_sizes = [round(s["size"], 1) for s in spans]
+    
+    try:
+        dominant_font = mode(font_sizes)
+    except:
+        from statistics import median
+        dominant_font = median(font_sizes)
+
     titles = []
-    font_sizes = []
 
-    for b in blocks:
-        if "lines" in b:
-            for line in b["lines"]:
-                for span in line["spans"]:
-                    font_sizes.append(span["size"])
+    for span in spans:
+        text = span["text"].strip()
+        if not text:
+            continue
 
-    medium_font = sum(font_sizes) / len(font_sizes) if font_sizes else 12
+        font = round(span["size"], 1)
 
-    for b in blocks:
-        if "lines" in b:
-            for line in b["lines"]:
-                for span in line["spans"]:
-                    text = span["text"].strip()
-                    if not text:
-                        continue
-                    if span["size"] >= medium_font * 1.2:
-                        titles.append(text)
-    return "; ".join(titles) if titles else None
+        if len(text) > 120:
+            continue
+
+        if text.count(" ") > 15:
+            continue 
+
+        if text.isupper():
+            continue
+    
+        if re.search(r"\.{5,}", text):
+            continue
+
+        section = search_section_keywords(text)        
+        if section:
+            titles.append(section)
+            logger.debug(f"Título detectado por palavra-chave de seção: {section}")
+            continue        
+
+        if any(p in text for p in [".", ";", ",", ":"]):
+            continue 
+
+        if font <= dominant_font * 1.25:
+            continue
+
+        if dominant_font < 10 and font < 14:
+            continue
+        
+        titles.append(text)
+        logger.debug(f"Título detectado por tamanho de fonte: {text}")
+
+    seen = set()
+    clean_titles = []
+    for t in titles:
+        if t not in seen:
+            seen.add(t)
+            clean_titles.append(t)
+
+    return "; ".join(clean_titles) if clean_titles else None

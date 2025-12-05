@@ -14,6 +14,6 @@ def summarize(pdf_path: str) -> str:
     summa = chain.invoke({"text": text})
     summa = summa.strip()
 
-    print(summa)
+    print(f"\n\n{summa}\n\n")
 
     return summa
