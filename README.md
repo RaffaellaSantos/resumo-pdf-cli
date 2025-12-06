@@ -6,7 +6,8 @@ Ferramenta de linha de comando (CLI) para extrair texto e imagens de arquivos PD
 - Extrair metadados e texto estruturado de PDFs.
 - Extrair imagens incorporadas no PDF.
 - Gerar resumos em Português com saída em Markdown contendo título, resumo e palavras-chave.
-- Salvar resultados automaticamente em pastas `markdown/` e `images/`.
+- Salvar resultados automaticamente em pastas `markdown/` e `images/`, as duas pastas são salvas em `output/`.
+- Possui logs em terminal e salva em arquivo.
 
 **Estrutura do projeto (resumida)**
 
@@ -14,6 +15,7 @@ Ferramenta de linha de comando (CLI) para extrair texto e imagens de arquivos PD
 resumo-pdf-cli/
 ├── src/
 │   ├── cli/          # argumentos e interface CLI
+|   ├── config/       # arquivo de configuração (Logs)
 │   ├── llm/          # integração com LLM (Ollama / LangChain)
 │   ├── pdf/          # extração de texto e imagens do PDF
 │   └── utils/        # helpers (arquivos, validações, formatação)
@@ -94,6 +96,7 @@ pdf_cli -p ./teste.pdf -e -n nome_exemplo
 ## Saída
 - Resumos e metadados são salvos como arquivos Markdown na pasta `output/markdown/`.
 - Imagens extraídas são salvas em `output/imagens/<nome_do_arquivo>/` com o nome base padrão definido pelo sistema ou pelo inserido junto a flag `n`.
+- Gera um arquivo `app.log` para visualização de logs da aplicação.
 
 ## Modelo / LLM
 
@@ -102,6 +105,8 @@ O projeto utiliza `OllamaLLM` integrado ao LangChain. O modelo padrão configura
 ```
 hf.co/tensorblock/SummLlama3.2-3B-GGUF:Q5_K_M
 ```
+
+**[tensorblock/SummLlama3.2-3B-GGUF](https://huggingface.co/tensorblock/SummLlama3.2-3B-GGUF)**
 
 ## Autor
 
