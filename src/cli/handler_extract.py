@@ -4,7 +4,7 @@ from src.utils.validator import define_name
 from src.utils.files import make_markdown
 from src.pdf.extractor import extract_pdf
 from src.pdf.image import extract_image
-from src.llm.summarize import summarize
+from src.llm.summarize import print_summary, summarize
 
 console = Console()
 logger = logging.getLogger(__name__)
@@ -38,8 +38,7 @@ def handle_extract(args):
 
         if extract_text:
             logger.debug("Iniciando extração de texto.")
-            with console.status("[bold green]Lendo o PDF e extraindo metadados...\n\n", spinner="dots"):
-                metadata = extract_pdf(path_pdf)
+            metadata = extract_pdf(path_pdf)
 
         if extract_img:
             logger.debug("Iniciando extração de imagens.")
@@ -50,6 +49,7 @@ def handle_extract(args):
             logger.debug("Iniciando resumo do PDF.")
             with console.status("[bold green]Lendo o PDF e gerando resumo com LLM...\n\n", spinner="dots"):
                 summa = summarize(path_pdf)
+            print_summary(summa)
 
         if metadata or summa:
             logger.debug("Criando arquivo markdown com os resultados.")

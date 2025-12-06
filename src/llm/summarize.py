@@ -18,8 +18,6 @@ def summarize(pdf_path: str) -> str:
     chain = make_prompt()
     summa = chain.invoke({"text": text})
     summa = summa.strip()
-
-    print_summary(summa)
     
     return summa
 
