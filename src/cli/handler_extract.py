@@ -46,8 +46,8 @@ def handle_extract(args):
 
         if extract_sum:
             logger.info("Iniciando resumo do PDF.")
-            # with console.status("[bold green]Lendo o PDF e gerando resumo com LLM...", spinner="dots"):
-            summa = summarize(path_pdf)
+            with console.status("[bold green]Lendo o PDF e gerando resumo com LLM...", spinner="dots"):
+                summa = summarize(path_pdf)
 
         if metadata or summa:
             logger.info("Criando arquivo markdown com os resultados.")

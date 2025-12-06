@@ -19,18 +19,18 @@ def summarize(pdf_path: str) -> str:
     summa = summa.strip()
 
     print(summa)
-    # print_summary(summa)
+    print_summary(summa)
     
     return summa
 
-# def print_summary(summary: str):
-#     """Imprime o resumo no console."""
-#     logger.debug("Imprimindo o resumo gerado pela LLM.")
+def print_summary(summary: str):
+    """Imprime o resumo no console."""
+    logger.debug("Imprimindo o resumo gerado pela LLM.")
     
-#     md = Markdown(summary)
-#     console.print(Panel(
-#         md,
-#         title="[bold yellow]Resumo do PDF[/]",
-#         border_style="green",
-#         padding=(1, 2)
-#     ))
+    md = Markdown(summary)
+    console.print(Panel(
+        md,
+        title="[bold yellow]Resumo do PDF[/]",
+        border_style="green",
+        padding=(1, 2)
+    ))
