@@ -1,7 +1,11 @@
 import logging
 from .model import make_prompt
 from src.utils.files import open_pdf, get_text
+from rich.panel import Panel
+from rich.markdown import Markdown
+from rich.console import Console
 
+console = Console()
 logger = logging.getLogger(__name__)
 
 def summarize(pdf_path: str) -> str:
@@ -14,6 +18,19 @@ def summarize(pdf_path: str) -> str:
     summa = chain.invoke({"text": text})
     summa = summa.strip()
 
-    print(f"\n\n{summa}\n\n")
-
+    print(summa)
+    # print_summary(summa)
+    
     return summa
+
+# def print_summary(summary: str):
+#     """Imprime o resumo no console."""
+#     logger.debug("Imprimindo o resumo gerado pela LLM.")
+    
+#     md = Markdown(summary)
+#     console.print(Panel(
+#         md,
+#         title="[bold yellow]Resumo do PDF[/]",
+#         border_style="green",
+#         padding=(1, 2)
+#     ))

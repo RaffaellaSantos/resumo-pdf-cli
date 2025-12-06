@@ -1,10 +1,12 @@
 import logging
+from rich.console import Console
 from src.utils.validator import define_name
 from src.utils.files import make_markdown
 from src.pdf.extractor import extract_pdf
 from src.pdf.image import extract_image
 from src.llm.summarize import summarize
 
+console = Console()
 logger = logging.getLogger(__name__)
 
 def handle_extract(args):
@@ -44,6 +46,7 @@ def handle_extract(args):
 
         if extract_sum:
             logger.info("Iniciando resumo do PDF.")
+            # with console.status("[bold green]Lendo o PDF e gerando resumo com LLM...", spinner="dots"):
             summa = summarize(path_pdf)
 
         if metadata or summa:
