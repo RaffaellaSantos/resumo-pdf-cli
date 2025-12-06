@@ -37,20 +37,22 @@ def handle_extract(args):
             return
 
         if extract_text:
-            logger.info("Iniciando extração de texto.")
-            metadata = extract_pdf(path_pdf)
+            logger.debug("Iniciando extração de texto.")
+            with console.status("[bold green]Lendo o PDF e extraindo metadados...", spinner="dots"):
+                metadata = extract_pdf(path_pdf)
 
         if extract_img:
-            logger.info("Iniciando extração de imagens.")
-            extract_image(path_pdf, name_image, filename)
+            logger.debug("Iniciando extração de imagens.")
+            with console.status("[bold green]Lendo o PDF e extraindo imagens...", spinner="dots"):
+                extract_image(path_pdf, name_image, filename)
 
         if extract_sum:
-            logger.info("Iniciando resumo do PDF.")
+            logger.debug("Iniciando resumo do PDF.")
             with console.status("[bold green]Lendo o PDF e gerando resumo com LLM...", spinner="dots"):
                 summa = summarize(path_pdf)
 
         if metadata or summa:
-            logger.info("Criando arquivo markdown com os resultados.")
+            logger.debug("Criando arquivo markdown com os resultados.")
             make_markdown(summarize=summa, metadata=metadata, filename=filename)
     except Exception as e:
         logger.error(f"Ocorreu um erro durante o processamento: {e}")
