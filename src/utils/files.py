@@ -1,8 +1,11 @@
 from typing import Dict
 import fitz, os, logging
-
+from rich.table import Table
+from rich import box
+from rich.console import Console
 from src.utils.validator import abs_path
 
+console = Console()
 logger = logging.getLogger(__name__)
 
 def open_pdf(pdf_path: str) -> fitz.Document:
@@ -24,24 +27,56 @@ def get_text(doc: fitz.Document) -> str :
 def format_output(metadata: Dict) -> str:
     """Constroi a saída dos dados extraidos do pdf."""
     logger.debug("Formatando a saída dos metadados extraidos.")
-    titles = "\n".join(f"- {t}" for t in metadata['titles'])
-    out = (
-    "\n\n## **Dados extraidos**\n\n"
-    f"**Título das seções**: \n{titles}\n\n"
-    f"**Número de páginas**: {metadata['page_count']}\n\n"
-    f"**Número de palavras**: {metadata['num_words']}\n\n"
-    f"**Número de palavras únicas**: {metadata['num_voc']}\n\n"
-    f"**10 palavras mais citadas**: {metadata['top_10']}\n\n"
-    f"**Tamanho do arquivo (KB)**: {metadata['size_kb']:.2f}\n\n"
-    f"**Links**: {metadata['links']}\n\n"
+
+    top_10, sections = console_print(metadata)
+
+    markdown_output = (
+        "## Dados Extraídos\n\n"
+        "| Atributo | Valor |\n"
+        "| :--- | :--- |\n"
+        f"| **Número de Páginas** | {metadata['page_count']} |\n"
+        f"| **Número de Palavras** | {metadata['num_words']} |\n"
+        f"| **Vocabulário Único** | {metadata['num_voc']} |\n"
+        f"| **Tamanho (KB)** | {metadata['size_kb']:.2f} |\n\n"
+        
+        "### Top 10 Palavras\n"
+        f"{top_10}\n\n"
+        
+        "### Estrutura de Seções\n"
+        f"{sections.replace('•', '-')}"
     )
 
-    return out 
+    return markdown_output
+
+def console_print(metadata: Dict):
+    """Imprime no console os metadados extraidos do PDF."""
+
+    logger.debug("Formatando a saída dos metadados extraidos.")
+    
+    table = Table(title="Metadados Extraídos do PDF", box=box.ROUNDED, show_header=True, header_style="bold magenta")
+
+    table.add_column("Atributo", style="cyan", no_wrap=True)
+    table.add_column("Valor", style="white")
+
+    table.add_row("Número de Páginas", str(metadata['page_count']))
+    table.add_row("Número de Palavras", str(metadata['num_words']))
+    table.add_row("Número de Vocabulário", str(metadata['num_voc']))
+    table.add_row("Tamanho (KB)", f"{metadata['size_kb']:.2f}")
+    
+    top_10 = ", ".join([f"{word} ({count})" for word, count in metadata['top_10']])
+    table.add_row("Top 10 Palavras", top_10)
+
+    sections = "\n".join([f"• {t}" for t in metadata['titles']])
+    table.add_row("Seções", sections)
+
+    console.print(table)
+
+    return top_10, sections
 
 def pixmap(pdf: str, xref: str, name_image: str, image_index: int, page_index: int, dir: str) -> str:
     """Cria o Pixmap, converte para RGB, salva a imagem no diretorio."""
     logger.debug(f"Salvando imagem xref {xref} da página {page_index}.")
-    output_dir = f"output/imagens/{dir}/{name_image}"
+    output_dir = f"output/imagens/{dir}"
     os.makedirs(output_dir, exist_ok=True)
     
     try:

@@ -13,7 +13,6 @@ def extract_pdf(pdf_path: str):
     try:
         metadata = extract_metadata(doc, pdf_path)
         out = format_output(metadata)
-        print(out)
 
         return out
     finally:
