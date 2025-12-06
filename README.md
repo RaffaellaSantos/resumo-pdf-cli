@@ -64,14 +64,14 @@ pip install -e .
 O entrypoint da CLI é `pdf_cli`. Para ver as opções de linha de comando:
 
 ```bash
-pdf_cli -h
+pdf_cli
 ```
 
 Argumentos principais:
 - `-p, --path`: caminho para o arquivo PDF (obrigatório)
 - `-t, --text_only`: extrai apenas o texto e gera um Markdown
 - `-i, --image`: extrai apenas as imagens
-- `-n, --image_name`: nome base para salvar imagens (usado com `-i` ou `-e`)
+- `-n, --image_name`: nome base opcional para salvar imagens (usado com `-i` ou `-e`)
 - `-s, --summarize`: gera apenas o resumo usando a LLM
 - `-e, --everything`: executa todas as etapas (texto, imagens e resumo)
 
@@ -92,8 +92,8 @@ pdf_cli -p ./teste.pdf -e -n nome_exemplo
 ```
 
 ## Saída
-- Resumos e metadados são salvos como arquivos Markdown na pasta `markdown/`.
-- Imagens extraídas são salvas em `images/<nome_do_arquivo>/` com o nome base definido por `-n`\_`númeroDaPágina`\_`númeroDaImagem`.
+- Resumos e metadados são salvos como arquivos Markdown na pasta `output/markdown/`.
+- Imagens extraídas são salvas em `output/imagens/<nome_do_arquivo>/` com o nome base padrão definido pelo sistema ou pelo inserido junto a flag `n`.
 
 ## Modelo / LLM
 
