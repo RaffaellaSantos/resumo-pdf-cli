@@ -42,8 +42,7 @@ def handle_extract(args):
 
         if extract_img:
             logger.debug("Iniciando extração de imagens.")
-            with console.status("[bold green]Lendo o PDF e extraindo imagens...\n\n", spinner="dots"):
-                extract_image(path_pdf, name_image, filename)
+            extract_image(path_pdf, name_image, filename)
 
         if extract_sum:
             logger.debug("Iniciando resumo do PDF.")
