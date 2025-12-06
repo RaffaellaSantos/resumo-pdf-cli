@@ -4,6 +4,7 @@ from src.utils.files import open_pdf, get_text
 from rich.panel import Panel
 from rich.markdown import Markdown
 from rich.console import Console
+from rich import box
 
 console = Console()
 logger = logging.getLogger(__name__)
@@ -30,6 +31,8 @@ def print_summary(summary: str):
     console.print(Panel(
         md,
         title="[bold yellow]Resumo do PDF[/]",
+        subtitle="[bold yellow]Fim do Resumo[/]",
+        box = box.ROUNDED,
         border_style="green",
         padding=(1, 2)
     ))
