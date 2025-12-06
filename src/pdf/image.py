@@ -8,6 +8,8 @@ def extract_image(pdf: str, name_image: str, dir_name: str):
     logger.debug(f"Extraindo imagens do PDF: {pdf}")
     pdf_extraido = open_pdf(pdf)
 
+    path = None
+
     for page_index in range(len(pdf_extraido)):
         page = pdf_extraido[page_index]
         image_list = page.get_images()
@@ -21,4 +23,8 @@ def extract_image(pdf: str, name_image: str, dir_name: str):
             xref = img[0] 
             path = pixmap(pdf_extraido, xref, name_image, image_index, page_index, dir_name)
 
-    logger.info(f"Imagens salvas em: {path}")
+    if path:
+        logger.info(f"Imagens extraidas e salvas em: {path}")
+    else:
+        logger.info("Nenhuma imagem foi encontrada no PDF.")
+    
