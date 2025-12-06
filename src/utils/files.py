@@ -1,6 +1,8 @@
 from typing import Dict
 import fitz, os, logging
 
+from src.utils.validator import abs_path
+
 logger = logging.getLogger(__name__)
 
 def open_pdf(pdf_path: str) -> fitz.Document:
@@ -24,7 +26,7 @@ def format_output(metadata: Dict) -> str:
     logger.debug("Formatando a saída dos metadados extraidos.")
     titles = "\n".join(f"- {t}" for t in metadata['titles'])
     out = (
-    "## **Dados extraidos**\n\n"
+    "\n\n## **Dados extraidos**\n\n"
     f"**Título das seções**: \n{titles}\n\n"
     f"**Número de páginas**: {metadata['page_count']}\n\n"
     f"**Número de palavras**: {metadata['num_words']}\n\n"
@@ -36,10 +38,10 @@ def format_output(metadata: Dict) -> str:
 
     return out 
 
-def pixmap(pdf: str, xref: str, name_image: str, image_index: int, page_index: int, dir: str):
+def pixmap(pdf: str, xref: str, name_image: str, image_index: int, page_index: int, dir: str) -> str:
     """Cria o Pixmap, converte para RGB, salva a imagem no diretorio."""
     logger.debug(f"Salvando imagem xref {xref} da página {page_index}.")
-    output_dir = f"images/{dir}/{name_image}"
+    output_dir = f"output/imagens/{dir}/{name_image}"
     os.makedirs(output_dir, exist_ok=True)
     
     try:
@@ -50,17 +52,22 @@ def pixmap(pdf: str, xref: str, name_image: str, image_index: int, page_index: i
 
         file_path = os.path.join(output_dir, f"{name_image}_pg{page_index}_img{image_index}.png")
         pix.save(file_path)
-        logger.info(f"Imagem salva: {file_path}")
+        logger.debug(f"Imagem salva: {file_path}")
         pix = None
     except Exception as e:
         logger.error(f"Falha ao salvar imagem xref {xref}: {e}")
 
+    return abs_path(output_dir)
+
 def make_markdown(summarize: str = None, metadata: str = None, filename: str = None):
     """Cria o arquivo markdown com os dados extraidos e/ou resumo."""
     logger.debug(f"Criando arquivo markdown: {filename}.md")
-    path = f"markdown/{filename}.md"
-    os.makedirs("markdown", exist_ok=True)
+    path = f"output/markdown/{filename}.md"
+    os.makedirs("output/markdown", exist_ok=True)
     markdown = open(path, "w", encoding="utf-8-sig")
+
+    path = abs_path(path)
+    logger.info(f"Arquivo markdown criado em: {path}")
 
     if summarize != None:
         markdown.write(summarize + "\n\n")

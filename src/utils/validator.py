@@ -1,4 +1,4 @@
-import argparse, logging
+import argparse, logging, os
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -33,3 +33,9 @@ def define_name(pdf_path: Path) -> str:
     """Define o nome do arquivo sem extensão."""
     logger.debug(f"Definindo nome do arquivo para: {pdf_path.stem}")
     return pdf_path.stem
+
+def abs_path(path: Path) -> str:
+    """Retorna o caminho absoluto do arquivo."""
+    absolute_path = os.path.abspath(path)
+    logger.debug(f"Caminho absoluto do arquivo: {absolute_path}")
+    return absolute_path

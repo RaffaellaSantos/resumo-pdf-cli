@@ -6,12 +6,12 @@ def main():
     """Função que inicia toda a aplicação."""
     setup_logging()
     logger = logging.getLogger(__name__)
-    logger.info("Iniciando a aplicação...")
+    logger.debug("Iniciando a aplicação...")
 
     try:
         from .cli.argumments import run
         run()
-        logger.info("Aplicação finalizada com sucesso.")
+        logger.debug("Aplicação finalizada com sucesso.")
 
     except KeyboardInterrupt:
         logger.warning("Operação interrompida pelo usuário.")

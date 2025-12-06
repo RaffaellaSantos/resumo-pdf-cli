@@ -13,10 +13,12 @@ def extract_image(pdf: str, name_image: str, dir_name: str):
         image_list = page.get_images()
 
         if image_list:
-            logger.debug(f"Imagem encontrada {len(image_list)} nas páginas {page_index}")
+            logger.debug(f"Quantidades de imagens encontradas {len(image_list)} na página {page_index}")
         else:
             logger.debug(f"Sem imagem na página: {page_index}")
 
         for image_index, img in enumerate(image_list, start=1):
             xref = img[0] 
-            pixmap(pdf_extraido, xref, name_image, image_index, page_index, dir_name)
+            path = pixmap(pdf_extraido, xref, name_image, image_index, page_index, dir_name)
+
+    logger.info(f"Imagens salvas em: {path}")
